@@ -1,16 +1,110 @@
-# React + Vite
+# 🎯 Normec AI Campaign Generator
+> From Business Model Canvas to Full Campaign — Automatically.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Built by **Prompt Pirates** for the AI Automation Hackathon.
 
-Currently, two official plugins are available:
+🔗 **Live Demo:** [https://project-dvj4e.vercel.app](https://project-dvj4e.vercel.app)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 📖 About
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The **Normec AI Campaign Generator** is an AI-powered tool that transforms a Business Model Canvas (BMC) into a complete marketing campaign package in under a minute.
 
-## Expanding the ESLint configuration
+Designed for Normec — an international organisation in Testing, Inspection, Certification, and Compliance (TICC) — this tool eliminates repetitive manual work and ensures consistent, high-quality campaign output across all business units.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 🚀 Features
+
+- **BMC Input** — Fill in the form manually or upload a PDF
+- **AI Extraction** — Automatically identifies key proposition, target audience, and messaging
+- **Full Campaign Output** including:
+  - 🖥️ Landing page (headline, subheadline, body copy, CTA)
+  - 💼 3 LinkedIn ad phases (Awareness, Consideration, Conversion)
+  - 📧 Email draft (subject line, preview text, body copy)
+- **Multi-language support** — English & Bahasa Indonesia
+- **Tone selector** — Professional, Urgent, or Educational
+- **Export options** — Copy per section, copy all, or download as Word document
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React + Vite |
+| Automation | n8n (workflow automation) |
+| AI | Groq + LLaMA (extraction & generation) |
+| Deployment | Vercel |
+
+---
+
+## ⚙️ How It Works
+
+```
+[BMC Input] → [AI Extraction] → [Campaign Package]
+```
+
+1. **BMC Upload** — User inputs the Business Model Canvas via form or PDF upload
+2. **AI Extraction** — AI identifies key proposition, target audience, and messaging
+3. **Campaign Generation** — Full campaign package is generated and displayed across three tabs: Landing Page, LinkedIn, and Email
+
+---
+
+## 🏃 Getting Started
+
+### Prerequisites
+- Node.js >= 18
+- n8n instance (self-hosted or cloud)
+- Groq API key
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/your-username/normec-campaign-generator.git
+cd normec-campaign-generator
+
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env
+# Fill in your GROQ_API_KEY and N8N_WEBHOOK_URL in .env
+
+# Run the development server
+npm run dev
+```
+
+### Environment Variables
+
+```env
+VITE_N8N_WEBHOOK_URL=your_n8n_webhook_url
+VITE_GROQ_API_KEY=your_groq_api_key
+```
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] Platform integration (Contentful, Copernica, LinkedIn Ads Manager)
+- [ ] Multi-format BMC input (Excel, Word, PowerPoint, OCR for handwritten)
+- [ ] Campaign history & performance comparison
+- [ ] Full campaign management dashboard
+
+---
+
+## 👥 Team
+
+| Name | Role |
+|---|---|
+| Kharisma Sari Dewi | — |
+| Maharani Ria Sina | — |
+| Yonaka Titin Nur Cahyani | — |
+
+---
+
+## 📄 License
+
+This project was built for the AI Automation Hackathon. All rights reserved.
