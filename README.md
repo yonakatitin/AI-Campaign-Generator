@@ -81,7 +81,6 @@ npm run dev
 
 ```env
 VITE_N8N_WEBHOOK_URL=your_n8n_webhook_url
-VITE_GROQ_API_KEY=your_groq_api_key
 ```
 
 ---
@@ -99,9 +98,9 @@ VITE_GROQ_API_KEY=your_groq_api_key
 
 | Name | Role |
 |---|---|
-| Yonaka Titin Nur Cahyani | Full Stack Developer & AI Engineer |
-| Maharani Ria Sina | Business Analyst & Product Researcher |
-| Kharisma Sari Dewi | Campaign Strategist & Content Designer |
+| [Yonaka Titin Nur Cahyani](https://github.com/yonakatitin) | Full Stack Developer & AI Engineer |
+| [Maharani Ria Sina](https://github.com/HyRii) | Campaign Strategist & Content Designer |
+| [Kharisma Sari Dewi](https://github.com/kharsd) | Business Analyst & Product Researcher |
 
 ---
 
