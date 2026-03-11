@@ -11,7 +11,7 @@ placeholderStyle.textContent = `input::placeholder, textarea::placeholder { colo
 document.head.appendChild(placeholderStyle);
 
 const USE_MOCK = false;
-const WEBHOOK_URL = "https://yonakatitin.app.n8n.cloud/webhook/normec-campaign";
+const WEBHOOK_URL = import.meta.env.VITE_WEBHOOK_URL;
 
 // ── PDF Text Extractor ───────────────────────────────────────
 const extractTextFromPdf = async (file) => {
