@@ -79,8 +79,10 @@ npm run dev
 
 ### Environment Variables
 
+Create a `.env` file in the root directory based on `.env.example`:
+
 ```env
-VITE_N8N_WEBHOOK_URL=your_n8n_webhook_url
+VITE_WEBHOOK_URL=your_n8n_webhook_url
 ```
 
 ---
@@ -94,13 +96,21 @@ VITE_N8N_WEBHOOK_URL=your_n8n_webhook_url
 
 ---
 
+## 🔄 n8n Workflow
+
+![n8n Workflow](assets/ai-campaign-workflow.png)
+
+The full workflow can be imported via [`n8n/ai-campaign-workflow.json`](n8n/ai-campaign-workflow.json).
+
+---
+
 ## 👥 Team
 
 | Name | Role |
 |---|---|
 | [Yonaka Titin Nur Cahyani](https://github.com/yonakatitin) | Full Stack Developer & AI Engineer |
-| [Maharani Ria Sina](https://github.com/HyRii) | Campaign Strategist & Content Designer |
-| [Kharisma Sari Dewi](https://github.com/kharsd) | Business Analyst & Product Researcher |
+| [Maharani Ria Sina](https://github.com/HyRii) | Business Analyst & Product Researcher |
+| [Kharisma Sari Dewi](https://github.com/kharsd) | Campaign Strategist & Content Designer |
 
 ---
 
