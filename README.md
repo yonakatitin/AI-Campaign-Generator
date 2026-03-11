@@ -99,9 +99,9 @@ VITE_GROQ_API_KEY=your_groq_api_key
 
 | Name | Role |
 |---|---|
-| Kharisma Sari Dewi | — |
-| Maharani Ria Sina | — |
-| Yonaka Titin Nur Cahyani | — |
+| Yonaka Titin Nur Cahyani | Full Stack Developer & AI Engineer |
+| Maharani Ria Sina | Business Analyst & Product Researcher |
+| Kharisma Sari Dewi | Campaign Strategist & Content Designer |
 
 ---
 
