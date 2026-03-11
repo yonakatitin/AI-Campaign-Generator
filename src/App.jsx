@@ -128,6 +128,7 @@ const C = {
   border:  "#E4DDD6",
   white:   "#FFFFFF",
   surface: "#F7F3F0",
+  cta:     "#AFA8A3",
 };
 const F = "'Ubuntu', sans-serif";
 
@@ -663,7 +664,7 @@ const CampaignOutput = ({ campaign, qualityCheck, meta, extracted, onReset, onRe
                 <div style={{ fontSize: 14, color: C.dark, lineHeight: 1.8, whiteSpace: "pre-line", fontFamily: F }}>{lp.body_copy}</div>
               </ContentBlock>
               <ContentBlock label="CTA Button">
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 22px", background: C.orange, color: C.white, borderRadius: 6, fontWeight: 500, fontSize: 14, fontFamily: F }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 22px", background: C.cta, color: C.white, borderRadius: 6, fontWeight: 500, fontSize: 14, fontFamily: F }}>
                   {lp.cta_text} ↗
                 </div>
               </ContentBlock>
@@ -695,7 +696,7 @@ const CampaignOutput = ({ campaign, qualityCheck, meta, extracted, onReset, onRe
               </ContentBlock>
 
               <ContentBlock label="CTA Button">
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 22px", background: C.orange, color: C.white, borderRadius: 6, fontWeight: 500, fontSize: 14, fontFamily: F }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 22px", background: C.cta, color: C.white, borderRadius: 6, fontWeight: 500, fontSize: 14, fontFamily: F }}>
                   {email.cta_text} ↗
                 </div>
               </ContentBlock>
