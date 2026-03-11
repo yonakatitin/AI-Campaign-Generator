@@ -1,0 +1,432 @@
+{
+  "name": "normec update",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "normec-campaign-ymk-v2",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "a96c6019-2fd4-4504-80e4-ccd8da70f3da",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        -112
+      ],
+      "webhookId": "085fb076-dd21-48c2-a6ee-69696bb5f5dd"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst body = input.body || input;\n\nconst isPdf = body.input_method === 'pdf';\n\nif (isPdf) {\n  if (!body.pdf_text || body.pdf_text.trim() === '') {\n    throw new Error('PDF text is empty — failed to parse PDF content');\n  }\n} else {\n  const required = [\n    'entity',\n    'key_activities', 'needs', 'value_propositions', 'channels',\n    'target_audience', 'kpis', 'strategic_context',\n    'budget_indication', 'follow_up_by'\n  ];\n  const missing = required.filter(k => !body[k] || body[k].trim() === '');\n  if (missing.length > 0) throw new Error(`Required fields cannot be empty: ${missing.join(', ')}`);\n}\n\nconst cleanedInput = {\n  input_method: body.input_method || 'text',\n\n  // Campaign Info\n  entity:             body.entity?.trim() || '-',\n  date:               body.date?.trim() || '-',\n  contact_person:     body.contact_person?.trim() || '-',\n  completed_by:       body.completed_by?.trim() || '-',\n\n  // BMC Fields\n  key_activities:     body.key_activities?.trim() || '-',\n  needs:              body.needs?.trim() || '-',\n  value_propositions: body.value_propositions?.trim() || '-',\n  channels:           body.channels?.trim() || '-',\n  target_audience:    body.target_audience?.trim() || '-',\n  kpis:               body.kpis?.trim() || '-',\n  strategic_context:  body.strategic_context?.trim() || '-',\n  budget_indication:  body.budget_indication?.trim() || '-',\n  follow_up_by:       body.follow_up_by?.trim() || '-',\n\n  // Service Details (optional)\n  service_name:       body.service_name?.trim() || '-',\n  service_detail:     body.service_detail?.trim() || '-',\n\n  // Tone & PDF\n  tone:               body.tone?.trim() || 'professional',\n  pdf_text:           body.pdf_text || null,\n};\n\nreturn [{ json: cleanedInput }];"
+      },
+      "id": "1cd19227-39b6-40f5-8f66-159d6288fb28",
+      "name": "Validate & Prepare Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst isPdf = data.input_method === 'pdf';\n\nconst systemPrompt = `You are a B2B marketing strategist specializing in the Testing, Inspection, Certification & Compliance (TICC) industry, with deep knowledge of Normec's services.\n\nYour task is to extract and structure campaign data from the input provided.\n\nRules:\n- Return ONLY valid JSON, no explanation, no markdown, no backticks\n- Be specific and actionable, not generic\n- Keep the same language as the input\n- IMPORTANT: If a field is marked as NOT PROVIDED, return an empty string \"\" for that field — do NOT infer or fill it from other data\n- IMPORTANT: Use exact field names as shown in the JSON template — do NOT rename or modify field names\n- tone options: professional | urgent | educational`;\n\nconst userPrompt = isPdf ? `\nExtract and structure campaign data from this BMC PDF document. Return ONLY this JSON:\n\n{\n  \"entity\": \"<entity name from document>\",\n  \"date\": \"<date from document, if not found return empty string>\",\n  \"contact_person\": \"<contact person from document, if not found return empty string>\",\n  \"completed_by\": \"<completed by from document, if not found return empty string>\",\n  \"key_activities\": \"<key activities extracted from the PDF>\",\n  \"needs\": \"<customer needs extracted from the PDF>\",\n  \"value_propositions\": \"<value propositions extracted from the PDF>\",\n  \"channels\": \"<channels extracted from the PDF>\",\n  \"target_audience\": \"<specific target audience extracted from the PDF>\",\n  \"kpis\": \"<KPIs extracted from the PDF>\",\n  \"strategic_context\": \"<strategic context extracted from the PDF>\",\n  \"budget_indication\": \"<budget indication extracted from the PDF>\",\n  \"follow_up_by\": \"<follow-up by extracted from the PDF>\",\n  \"key_problem\": \"<the main problem this service solves, extracted from the PDF>\",\n  \"value_proposition\": \"<sharp single value proposition extracted from the PDF>\",\n  \"key_differentiators\": [\"<differentiator 1>\", \"<differentiator 2>\", \"<differentiator 3>\"],\n  \"budget\": \"<budget indication from the PDF>\",\n  \"geographic_focus\": \"<target geography from the PDF>\",\n  \"tone\": \"${data.tone || 'professional'}\",\n  \"campaign_language\": \"<en or id based on document language>\",\n  \"service_name\": \"<exact service name from Service Details section below — if NOT PROVIDED return empty string>\",\n  \"service_detail\": \"<exact service detail from Service Details section below — if NOT PROVIDED return empty string>\"\n}\n\n--- BMC PDF CONTENT ---\n${data.pdf_text}\n\n--- SERVICE DETAILS (manually provided by user) ---\nService Name: ${data.service_name && data.service_name !== '-' ? data.service_name : 'NOT PROVIDED'}\nService Detail: ${data.service_detail && data.service_detail !== '-' ? data.service_detail : 'NOT PROVIDED'}\n` : `\nExtract and structure campaign data from the BMC below. Return ONLY this JSON:\n\n{\n  \"entity\": \"<entity name>\",\n  \"target_audience\": \"<specific target audience derived from Target Audience field>\",\n  \"key_problem\": \"<the main problem this service solves, derived from Needs field>\",\n  \"value_proposition\": \"<sharp single value proposition from Value Propositions field>\",\n  \"key_differentiators\": [\"<differentiator 1>\", \"<differentiator 2>\", \"<differentiator 3>\"],\n  \"kpis\": \"<campaign KPIs>\",\n  \"budget\": \"<budget indication>\",\n  \"geographic_focus\": \"<target geography derived from Target Audience or Strategic Context>\",\n  \"tone\": \"<tone of communication>\",\n  \"campaign_language\": \"<en or id based on input language>\",\n  \"service_name\": \"<exact service name from Service Details section below — if NOT PROVIDED return empty string>\",\n  \"service_detail\": \"<exact service detail from Service Details section below — if NOT PROVIDED return empty string>\"\n}\n\n--- BMC INPUT ---\nEntity: ${data.entity || '-'}\nDate: ${data.date || '-'}\nContact Person: ${data.contact_person || '-'}\nCompleted By: ${data.completed_by || '-'}\nKey Activities: ${data.key_activities || '-'}\nNeeds: ${data.needs || '-'}\nValue Propositions: ${data.value_propositions || '-'}\nChannels: ${data.channels || '-'}\nTarget Audience: ${data.target_audience || '-'}\nKPIs: ${data.kpis || '-'}\nStrategic Context: ${data.strategic_context || '-'}\nBudget Indication: ${data.budget_indication || '-'}\nFollow-up By: ${data.follow_up_by || '-'}\n\n--- SERVICE DETAILS (manually provided by user) ---\nService Name: ${data.service_name && data.service_name !== '-' ? data.service_name : 'NOT PROVIDED'}\nService Detail: ${data.service_detail && data.service_detail !== '-' ? data.service_detail : 'NOT PROVIDED'}\n\n--- CAMPAIGN TONE ---\nTone: ${data.tone || 'professional'}\n`;\n\nreturn [{ json: { systemPrompt, userPrompt, ...data } }];"
+      },
+      "id": "accf2a17-7f79-45bc-8aef-0a4f0778e4d5",
+      "name": "Build Extraction Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.groqBody }}",
+        "options": {}
+      },
+      "id": "ab84b6f6-f717-4b63-a47c-165eabb3b09f",
+      "name": "Groq: Extract BMC",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1120,
+        -112
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "f9EMjucHbSA7FvkK",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawText = $input.first().json.choices?.[0]?.message?.content || '';\nlet extracted;\ntry {\n  const cleaned = rawText\n    .replace(/```json/gi, '')\n    .replace(/```/g, '')\n    .trim();\n  extracted = JSON.parse(cleaned);\n} catch (e) {\n  throw new Error(`Gagal parsing hasil ekstraksi LLM: ${rawText}`);\n}\n\nconst isPdf = $input.first().json.input_method === 'pdf';\n\nconst requiredAlways = [\n  'entity',\n  'target_audience',\n  'key_problem',\n  'value_proposition',\n  'tone',\n  'campaign_language'\n];\n\nconst requiredPdfOnly = [\n  'key_activities',\n  'needs',\n  'value_propositions',\n  'channels',\n  'strategic_context',\n  'budget_indication',\n  'follow_up_by'\n];\n\nconst requiredFields = isPdf\n  ? [...requiredAlways, ...requiredPdfOnly]\n  : requiredAlways;\n\nfor (const field of requiredFields) {\n  if (!extracted[field] || (Array.isArray(extracted[field]) && extracted[field].length === 0)) {\n    throw new Error(`Field '${field}' tidak ditemukan dalam hasil ekstraksi`);\n  }\n}\n\n// Optional fields — fallback\nextracted.service_name = extracted.service_name || '';\nextracted.service_detail = extracted.service_detail || '';\nextracted.kpis = extracted.kpis || extracted['kpi'] || extracted['KPIs'] || extracted[\"KPI's\"] || '-';\nextracted.budget = extracted.budget || extracted['budget_indication'] || '-';\nextracted.geographic_focus = extracted.geographic_focus || extracted['target_geography'] || '-';\nextracted.key_differentiators = extracted.key_differentiators || extracted['differentiators'] || extracted['key_differentiator'] || [];\n\nreturn [{ json: { extracted, input_method: $input.first().json.input_method } }];"
+      },
+      "id": "d58bffce-df2e-49f3-90fe-a94d7e55d453",
+      "name": "Parse Extracted JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const { extracted } = $input.first().json;\n\nif (!extracted) {\n  throw new Error(`extracted is undefined — input received: ${JSON.stringify($input.first().json)}`);\n}\n\nconst lang = extracted.campaign_language === 'id' ? 'Bahasa Indonesia' : 'English';\n\nconst systemPrompt = `You are a senior B2B copywriter for Normec, a Testing, Inspection, Certification & Compliance (TICC) organisation. Generate campaign content that is specific, actionable, and tailored. Return ONLY valid JSON, no explanation, no markdown, no backticks. Write in ${lang}. Tone: ${extracted.tone}.`;\n\nconst userPrompt = `Generate a B2B campaign package. Return ONLY this JSON:\n\n{\n  \"landing_page\": {\n    \"headline\": \"<8-12 word headline addressing the key problem>\",\n    \"subheadline\": \"<1-2 sentence subheadline expanding on the value proposition>\",\n    \"body_copy\": \"<3 paragraphs: problem, solution, proof + CTA>\",\n    \"cta_text\": \"<CTA button text, max 6 words>\"\n  },\n  \"linkedin\": {\n    \"phase_1\": {\n      \"label\": \"Phase 1 · Awareness\",\n      \"hook\": \"<attention-grabbing statement about the problem>\",\n      \"body\": \"<2-3 sentences educating the audience>\",\n      \"cta\": \"<soft CTA: read/learn/discover>\",\n      \"color\": \"#4f6ef7\"\n    },\n    \"phase_2\": {\n      \"label\": \"Phase 2 · Consideration\",\n      \"hook\": \"<transition from problem to solution>\",\n      \"body\": \"<2-3 sentences introducing Normec service>\",\n      \"cta\": \"<medium CTA: download/watch/see>\",\n      \"color\": \"#8b5cf6\"\n    },\n    \"phase_3\": {\n      \"label\": \"Phase 3 · Conversion\",\n      \"hook\": \"<urgency or social proof statement>\",\n      \"body\": \"<2-3 sentences with proof points and urgency>\",\n      \"cta\": \"<strong CTA: book/schedule/get started>\",\n      \"color\": \"#22c55e\"\n    }\n  },\n  \"email\": {\n    \"subject_line\": \"<subject line, max 50 characters>\",\n    \"preview_text\": \"<preview text, max 90 characters>\",\n    \"body\": \"<full email: greeting, pain point, solution, proof points, CTA>\",\n    \"cta_text\": \"<CTA button text, max 5 words>\"\n  }\n}\n\n--- CAMPAIGN DATA ---\nEntity: ${extracted.entity}\nService: ${extracted.service_name || '-'}${extracted.service_detail ? ' — ' + extracted.service_detail : ''}\nTarget Audience: ${extracted.target_audience}\nGeographic Focus: ${extracted.geographic_focus || '-'}\nKey Problem: ${extracted.key_problem}\nValue Proposition: ${extracted.value_proposition}\nKey Differentiators: ${Array.isArray(extracted.key_differentiators) ? extracted.key_differentiators.join(', ') : (extracted.key_differentiators || '-')}\nKPIs: ${extracted.kpis || '-'}\nBudget: ${extracted.budget || '-'}\nTone: ${extracted.tone}`;\n\nreturn [{ json: { systemPrompt, userPrompt, extracted } }];"
+      },
+      "id": "e2b37be4-658b-4cef-accb-3d8fbac299d2",
+      "name": "Build Campaign Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.groqBody }}",
+        "options": {}
+      },
+      "id": "c916282c-32a1-4d4d-8295-a3bc9a8918a3",
+      "name": "Groq: Generate Campaign",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1984,
+        -112
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "f9EMjucHbSA7FvkK",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawText = $input.first().json.choices?.[0]?.message?.content || '';\nconst extracted = $node[\"Build Campaign Prompt\"].json.extracted;\n\nlet campaign;\ntry {\n  const cleaned = rawText\n    .replace(/```json/gi, '')\n    .replace(/```/g, '')\n    .trim();\n  campaign = JSON.parse(cleaned);\n} catch (e) {\n  throw new Error(`Gagal parsing hasil campaign LLM: ${rawText}`);\n}\n\nif (!campaign.landing_page || !campaign.linkedin || !campaign.email) {\n  throw new Error('Output LLM tidak lengkap — missing landing_page, linkedin, atau email');\n}\n\nreturn [{ json: { campaign, extracted } }];"
+      },
+      "id": "1fe13fae-276f-4aea-b3b5-37a5780297e0",
+      "name": "Parse Campaign JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2208,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const { campaign, extracted } = $input.first().json;\n\n// Safety: pastikan semua field string\nconst lpHeadline = campaign.landing_page?.headline || '';\nconst lpBodyCopy = campaign.landing_page?.body_copy || '';\nconst emailSubject = campaign.email?.subject_line || '';\nconst emailBody = typeof campaign.email?.body === 'string' \n  ? campaign.email.body \n  : JSON.stringify(campaign.email?.body || '');\n\nlet score = 100;\nconst issues = [];\nconst suggestions = [];\n\nif (lpHeadline.split(' ').length < 6) {\n  score -= 10;\n  issues.push('Headline terlalu pendek');\n  suggestions.push('Tambahkan benefit spesifik di headline');\n}\n\nif (!lpBodyCopy.includes('?') && !lpBodyCopy.includes('!')) {\n  score -= 5;\n  suggestions.push('Pertimbangkan menambahkan pertanyaan rhetorical di body copy');\n}\n\nconst phases = Object.values(campaign.linkedin || {});\nif (phases.some(p => !p.cta || p.cta.trim() === '')) {\n  score -= 15;\n  issues.push('Satu atau lebih LinkedIn phase tidak memiliki CTA');\n}\n\nif (emailSubject.length > 60) {\n  score -= 10;\n  issues.push('Subject line terlalu panjang (>60 karakter)');\n  suggestions.push('Pangkas subject line agar lebih impactful');\n}\n\nif (!emailBody.toLowerCase().includes('[first name]') &&\n    !emailBody.toLowerCase().includes('hi ') &&\n    !emailBody.toLowerCase().includes('dear ')) {\n  score -= 5;\n  suggestions.push('Tambahkan personalisasi di email greeting');\n}\n\nconst allText = JSON.stringify(campaign).toLowerCase();\nconst hasSocialProof = ['%', 'clients', 'companies', 'manufacturers', 'certified', 'years'].some(w => allText.includes(w));\nif (!hasSocialProof) {\n  score -= 5;\n  suggestions.push('Tambahkan social proof: angka, jumlah klien, atau testimonial');\n}\n\nconst qualityCheck = {\n  score: Math.max(score, 0),\n  status: score >= 80 ? 'good' : score >= 60 ? 'needs_improvement' : 'poor',\n  issues,\n  suggestions\n};\n\nreturn [{ json: { campaign, extracted, qualityCheck } }];"
+      },
+      "id": "a47d6372-1327-49ad-bbd0-da9f0e1ebb36",
+      "name": "Quality Check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2416,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────\n// NODE: Build Final Response\n// ─────────────────────────────────────────\n\nconst { campaign, extracted, qualityCheck } = $input.first().json;\n\nconst response = {\n  success: true,\n  extracted,\n  campaign,\n  qualityCheck,\n  meta: {\n    generated_at: new Date().toISOString(),\n    model: 'llama-3.3-70b-versatile',\n    provider: 'groq',\n    version: '1.0.0'\n  }\n};\n\nreturn [{ json: response }];"
+      },
+      "id": "76103281-7230-4e62-91a5-4f4487de3504",
+      "name": "Build Final Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "6933a3dc-81ba-4c83-9466-ffc59ea25d36",
+      "name": "Respond: Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2864,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, error: $json.message || 'Terjadi kesalahan pada workflow' }) }}",
+        "options": {
+          "responseCode": 500,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "45f277e8-b0ce-42fc-abba-f69791915a3c",
+      "name": "Respond: Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2448,
+        96
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "7a640967-f8f1-45f4-881f-56142c56c614",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        2224,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\nconst groqBody = JSON.stringify({\n  model: \"llama-3.1-8b-instant\",\n  messages: [\n    { role: \"system\", content: data.systemPrompt },\n    { role: \"user\", content: data.userPrompt }\n  ],\n  max_tokens: 6000,\n  temperature: 0.3\n});\n\nreturn [{ \n  json: { \n    groqBody,\n    systemPrompt: data.systemPrompt,\n    userPrompt: data.userPrompt,\n    input_method: data.input_method  // ← tambah ini\n  } \n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -112
+      ],
+      "id": "46965ad7-6fb8-45e8-9506-1e5a80cd7b97",
+      "name": "bridging1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\nconst groqBody = JSON.stringify({\n  model: \"llama-3.3-70b-versatile\",\n  messages: [\n    { role: \"system\", content: data.systemPrompt },\n    { role: \"user\", content: data.userPrompt }\n  ],\n  max_tokens: 4096,\n  temperature: 0.3\n});\n\nreturn [{ \n  json: { \n    groqBody,\n    systemPrompt: data.systemPrompt,\n    userPrompt: data.userPrompt,\n    extracted: data.extracted\n  } \n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        -112
+      ],
+      "id": "27d77918-b7e1-44ee-b767-f034a02b22b8",
+      "name": "bridging2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate & Prepare Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Prepare Input": {
+      "main": [
+        [
+          {
+            "node": "Build Extraction Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Extraction Prompt": {
+      "main": [
+        [
+          {
+            "node": "bridging1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq: Extract BMC": {
+      "main": [
+        [
+          {
+            "node": "Parse Extracted JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Extracted JSON": {
+      "main": [
+        [
+          {
+            "node": "Build Campaign Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Campaign Prompt": {
+      "main": [
+        [
+          {
+            "node": "bridging2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq: Generate Campaign": {
+      "main": [
+        [
+          {
+            "node": "Parse Campaign JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Campaign JSON": {
+      "main": [
+        [
+          {
+            "node": "Quality Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quality Check": {
+      "main": [
+        [
+          {
+            "node": "Build Final Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Final Response": {
+      "main": [
+        [
+          {
+            "node": "Respond: Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Respond: Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "bridging1": {
+      "main": [
+        [
+          {
+            "node": "Groq: Extract BMC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "bridging2": {
+      "main": [
+        [
+          {
+            "node": "Groq: Generate Campaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "availableInMCP": false
+  },
+  "versionId": "95ca2890-15e6-4f85-a67c-07caae510138",
+  "meta": {
+    "instanceId": "d02f2adb1653e0f793446fc3269f1708313ea4d4bc471b76455d4ac04b3083eb"
+  },
+  "id": "RC2TlBIkQVGgXhQk",
+  "tags": []
+}
